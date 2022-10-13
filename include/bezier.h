@@ -27,8 +27,8 @@ class BezierSurface {
 
   BezierSurface(int m, int n);
   void setControlPoint(int i, int j, vec3 point);
-  Vertex evaluate(std::vector<std::vector<vec3>>& control_points, float u, float v);
-  Object generateObject();
+  Vertex evaluate(float u, float v);
+  std::vector<Vertex> generateObject();
 };
 
 std::vector<BezierSurface> read(const std::string &path);

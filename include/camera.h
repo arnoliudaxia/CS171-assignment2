@@ -33,6 +33,15 @@ class Camera {
   glm::mat4 getViewMatrix() {
     return glm::lookAt(Position, Position + Front, Up);
   }
+  glm::mat4 getProjectionMatrix() {
+	  
+      return glm::perspective(glm::radians(45.f), 4.0f / 3.0f, 0.1f, 100.0f);
+	  
+  }
+  glm::mat4 getVP()
+  {
+      return getProjectionMatrix() * getViewMatrix();
+  }
 
   void processWalkAround(WalkDirection direction) {
     switch (direction) {
