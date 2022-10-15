@@ -44,6 +44,7 @@ static void GLCheckError(const char* functionName, const char* file, int line) {
         __debugbreak();//MSBC±àÒëÆ÷ÌØÓÐº¯Êý
     }
 }
+float cutzplane = 0.f;
 int main() {
 #pragma region Choose RenderCase
 
@@ -85,9 +86,11 @@ int main() {
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetCursorPosCallback(window, mouse_callback);
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 #pragma endregion
 	
-    Shader simpleshader("shaders/vertex/onlyMVP.glsl", "shaders/fragment/colorIsNormal.glsl");
+    Shader simpleshader("shaders/vertex/cut.glsl", "shaders/fragment/planecut.glsl");
 
     auto vertexs= read("assets\\tea.bzs");
     Object testobj;
@@ -109,6 +112,7 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         simpleshader.use();
+        simpleshader.setFloat("cutzplane", cutzplane);
         simpleshader.setMat4("MVP", mycamera.getVP());
         GLDebug(testobj.drawArrays());
 
@@ -142,6 +146,14 @@ void processInput(GLFWwindow *window) {
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
         std::cout << "Camera position: (" << mycamera.Position.x << ", "
                   << mycamera.Position.y << ", " << mycamera.Position.z << ")" << std::endl;
+    }
+    if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS)
+    {
+        cutzplane += 0.1f;
+    }
+    if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
+    {
+        cutzplane -= 0.1f;
     }
 }
 

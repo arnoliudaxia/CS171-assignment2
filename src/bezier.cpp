@@ -108,6 +108,48 @@ Vertex BezierSurface::evaluate(float u, float v) {
 
 }
 
+void poitnfix(std::vector<Vertex>& result,Vertex v[3])
+{
+	result.push_back(v[0]);
+	result.push_back(v[1]);
+	result.push_back(v[2]);
+	return;
+	float cut = -2.7f;
+	int insideNum=0, outsideNum = 0;
+	for (size_t i = 0; i < 3; i++)
+	{
+		if (v[i].position.z < cut)
+		{
+			insideNum++;
+		}
+		else
+		{
+			outsideNum++;
+		}
+	}
+	if (outsideNum == 0)
+	{
+		result.push_back(v[0]);
+		result.push_back(v[1]);
+		result.push_back(v[2]);
+
+	}
+	if (insideNum > 0 && outsideNum > 0)
+	{
+		for (size_t i = 0; i < 3; i++)
+		{
+			if (v[i].position.z > cut)
+			{
+				v[i].position.z = cut;
+			}
+		}
+		result.push_back(v[0]);
+		result.push_back(v[1]);
+		result.push_back(v[2]);
+	}
+
+}
+
 /// <summary>
 /// 通过贝塞尔曲面生成mesh点
 /// </summary>
@@ -132,13 +174,20 @@ std::vector<Vertex> BezierSurface::generateObject() {
 	{
 		for (size_t j = 0; j < 5; j++)
 		{
+			float cut = -1.5f;
 			//每一个square对应两个三角
-			result.push_back(grid[i][j]);
-			result.push_back(grid[i][j+1]);
-			result.push_back(grid[i+1][j]);
-			result.push_back(grid[i][j + 1]);
-			result.push_back(grid[i + 1][j]);
-			result.push_back(grid[i+1][j+1]);
+			Vertex v[3] = { grid[i][j] ,grid[i][j + 1],grid[i + 1][j] };
+			poitnfix(result, v);
+			//result.push_back(grid[i][j]);
+			//result.push_back(grid[i][j + 1]);
+			//result.push_back(grid[i + 1][j]);
+			Vertex vv[3] = { grid[i][j+1] ,grid[i+1][j],grid[i + 1][j+1] };
+			poitnfix(result, vv);
+
+			//result.push_back(grid[i][j + 1]);
+			//result.push_back(grid[i + 1][j]);
+			//result.push_back(grid[i + 1][j + 1]);
+
 		}
 	}
 
