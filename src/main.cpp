@@ -45,6 +45,12 @@ static void GLCheckError(const char* functionName, const char* file, int line) {
     }
 }
 float cutzplane = 0.f;
+int selectEditPoint = 0;
+
+
+
+
+
 int main() {
 #pragma region Choose RenderCase
 
@@ -88,15 +94,31 @@ int main() {
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glPointSize(10.f);
+	
 #pragma endregion
 	
     Shader simpleshader("shaders/vertex/cut.glsl", "shaders/fragment/planecut.glsl");
+    Shader vertexshader("shaders/vertex/onlyMVP.glsl", "shaders/fragment/pointSelect.glsl");
+    Object controlPoints;
+    std::vector<vec3> controlP;
+    controlPoints.draw_mode.primitive_mode = GL_POINTS;
+
 
     auto vertexs= read("assets\\tea.bzs");
     Object testobj;
     testobj.draw_mode.primitive_mode = GL_TRIANGLES;
+	
     for each (BezierSurface bs in vertexs)
     {
+        for each (auto points in bs.control_points_m_)
+        {
+            for each (auto point in points)
+            {
+                controlPoints.vertices.push_back(Vertex{ point,point });
+                    controlP.push_back(point);
+            }
+        }
         for each (Vertex point in bs.generateObject())
         {
             testobj.vertices.push_back(point);
@@ -104,9 +126,53 @@ int main() {
         }
     }
     testobj.init();
+
+    controlPoints.init();
 	
     while (!glfwWindowShouldClose(window)) {
         processInput(window);
+        if (glfwGetKey(window, GLFW_KEY_Y) == GLFW_PRESS)
+        {
+            vec3 changepoint = controlP[selectEditPoint];
+            testobj.vertices.clear();
+            controlPoints.vertices.clear();
+            controlP.clear();
+
+            for (auto bs = vertexs.begin(); bs != vertexs.end(); bs++)
+            {
+                for (auto points = (*bs).control_points_m_.begin(); points != (*bs).control_points_m_.end(); points++)
+                {
+                    for (auto point = (*points).begin(); point != (*points).end(); point++)
+                    {
+                        if (changepoint == *point)
+                        {
+                            (*point).y += .2f;
+                        }
+                        controlPoints.vertices.push_back(Vertex{ *point,*point });
+                        controlP.push_back(*point);
+                    }
+                }
+                for (auto points = (*bs).control_points_n_.begin(); points != (*bs).control_points_n_.end(); points++)
+                {
+                    for (auto point = (*points).begin(); point != (*points).end(); point++)
+                    {
+                        if (changepoint == *point)
+                        {
+                            (*point).y += .2f;
+                        }
+                    }
+                }
+                for each (Vertex point in (*bs).generateObject())
+                {
+                    testobj.vertices.push_back(point);
+
+                }
+            }
+
+
+            testobj.init();
+            controlPoints.init();
+        }
 
         glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -115,6 +181,19 @@ int main() {
         simpleshader.setFloat("cutzplane", cutzplane);
         simpleshader.setMat4("MVP", mycamera.getVP());
         GLDebug(testobj.drawArrays());
+        vertexshader.use();
+        vertexshader.setMat4("MVP", mycamera.getVP());
+
+            selectEditPoint = selectEditPoint >= controlP.size()? 0:selectEditPoint;
+            selectEditPoint = selectEditPoint <0 ? controlP.size()-1 : selectEditPoint;
+			
+			
+        
+        vertexshader.setVec3("selection", (controlP[selectEditPoint]));
+        printf("Choose:%f,%f,%f", controlP[selectEditPoint].x, controlP[selectEditPoint].y, controlP[selectEditPoint].z);
+        printf("\n");
+			
+        GLDebug(controlPoints.drawArrays());
 
 		
 
@@ -155,6 +234,15 @@ void processInput(GLFWwindow *window) {
     {
         cutzplane -= 0.1f;
     }
+    if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS)
+    {
+        selectEditPoint++;
+    }
+    if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS)
+    {
+        selectEditPoint--;
+    }
+	
 }
 
 void mouse_callback(GLFWwindow *window, double x, double y) {

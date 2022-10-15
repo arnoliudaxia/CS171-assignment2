@@ -102,7 +102,7 @@ Vertex BezierSurface::evaluate(float u, float v) {
 	BezierCurve bc2(controlPoints);
 	Vertex du = bc2.evaluate(u);
 	Vertex result;
-	result.position = du.position;
+	result.position = dv.position;
 	result.normal = cross(du.normal, dv.normal);
 	return result;
 
