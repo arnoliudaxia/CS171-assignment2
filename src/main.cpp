@@ -105,7 +105,7 @@ int main() {
     controlPoints.draw_mode.primitive_mode = GL_POINTS;
 
 
-    auto vertexs= read("assets\\tea.bzs");
+    auto vertexs= read("assets\\testplane.bzs");
     Object testobj;
     testobj.draw_mode.primitive_mode = GL_TRIANGLES;
 	
